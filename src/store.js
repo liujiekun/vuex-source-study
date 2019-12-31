@@ -6,12 +6,12 @@ import { forEachValue, isObject, isPromise, assert, partial } from './util'
 let Vue // bind on install
 
 export class Store {
-  constructor (options = {}) {
+  constructor(options = {}) {
     // Auto install if it is not done yet and `window` has `Vue`.
     // To allow users to avoid auto-installation in some cases,
     // this code should be placed here. See #731
     if (!Vue && typeof window !== 'undefined' && window.Vue) {
-      install(window.Vue)
+      install(window.Vue) // 自动install
     }
 
     if (process.env.NODE_ENV !== 'production') {
@@ -31,7 +31,7 @@ export class Store {
     this._actionSubscribers = []
     this._mutations = Object.create(null)
     this._wrappedGetters = Object.create(null)
-    this._modules = new ModuleCollection(options)
+    this._modules = new ModuleCollection(options) // 模块收集
     this._modulesNamespaceMap = Object.create(null)
     this._subscribers = []
     this._watcherVM = new Vue()
@@ -39,6 +39,8 @@ export class Store {
 
     // bind commit and dispatch to self
     const store = this
+    // 可能咋一看比较懵逼，this里怎么没有dispatch和commit呀？
+    // 你要熟悉class的写法，你就会知道dispatch和commit都是写在class里面的，不是写在constructor里面的，相当于es5写法的prototype里面。
     const { dispatch, commit } = this
     this.dispatch = function boundDispatch (type, payload) {
       return dispatch.call(store, type, payload)
