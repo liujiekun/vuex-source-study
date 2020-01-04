@@ -31,7 +31,7 @@ export class Store {
     this._actionSubscribers = []
     this._mutations = Object.create(null)
     this._wrappedGetters = Object.create(null)
-    this._modules = new ModuleCollection(options) // 模块收集
+    this._modules = new ModuleCollection(options) // 模块收集，这一行直接模块收集完毕了
     this._modulesNamespaceMap = Object.create(null)
     this._subscribers = []
     this._watcherVM = new Vue()
@@ -43,6 +43,7 @@ export class Store {
     // 你要熟悉class的写法，你就会知道dispatch和commit都是写在class里面的，不是写在constructor里面的，相当于es5写法的prototype里面。
     const { dispatch, commit } = this
     this.dispatch = function boundDispatch (type, payload) {
+      // 这样的写法就是硬绑定，在函数里面调用call，然后外面无论如何改变this，里面也变不了
       return dispatch.call(store, type, payload)
     }
     this.commit = function boundCommit (type, payload, options) {
@@ -299,10 +300,10 @@ function resetStoreVM (store, state, hot) {
     Vue.nextTick(() => oldVm.$destroy())
   }
 }
-
+// 参数：this, state-->this._modules.root.state, [], this._modules.root
 function installModule (store, rootState, path, module, hot) {
   const isRoot = !path.length
-  const namespace = store._modules.getNamespace(path)
+  const namespace = store._modules.getNamespace(path) // 看字面意思是命名空间，其实就是模块路径
 
   // register in namespace map
   if (module.namespaced) {

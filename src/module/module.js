@@ -2,8 +2,9 @@ import { forEachValue } from '../util'
 
 // Base data struct for store's module, package with some attribute and method
 export default class Module {
-  constructor (rawModule, runtime) {
-    this.runtime = runtime
+  // 参数：options,false
+  constructor(rawModule, runtime) {
+    this.runtime = runtime // 默认是true，dev传进来是false
     // Store some children item
     this._children = Object.create(null)
     // Store the origin module object which passed by programmer

@@ -2,7 +2,7 @@ import Module from './module'
 import { assert, forEachValue } from '../util'
 
 export default class ModuleCollection {
-  constructor (rawRootModule) {
+  constructor(rawRootModule) { // rawRootModule -> options
     // register root module (Vuex.Store options)
     this.register([], rawRootModule, false)
   }
@@ -24,10 +24,10 @@ export default class ModuleCollection {
   update (rawRootModule) {
     update([], this.root, rawRootModule)
   }
-
+  // 参数：[],options,false
   register (path, rawModule, runtime = true) {
     if (process.env.NODE_ENV !== 'production') {
-      assertRawModule(path, rawModule)
+      assertRawModule(path, rawModule) // 类型判断
     }
 
     const newModule = new Module(rawModule, runtime)
@@ -41,6 +41,7 @@ export default class ModuleCollection {
     // register nested modules
     if (rawModule.modules) {
       forEachValue(rawModule.modules, (rawChildModule, key) => {
+        // 递归注册子模块
         this.register(path.concat(key), rawChildModule, runtime)
       })
     }
@@ -100,12 +101,12 @@ const assertTypes = {
   mutations: functionAssert,
   actions: objectAssert
 }
-
+// [],options
 function assertRawModule (path, rawModule) {
   Object.keys(assertTypes).forEach(key => {
     if (!rawModule[key]) return
 
-    const assertOptions = assertTypes[key]
+    const assertOptions = assertTypes[key] // 分类校验，所有getters，mutations，必须是function，所有actions必须是function或者object
 
     forEachValue(rawModule[key], (value, type) => {
       assert(
