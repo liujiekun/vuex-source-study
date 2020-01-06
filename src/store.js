@@ -31,7 +31,16 @@ export class Store {
     this._actionSubscribers = []
     this._mutations = Object.create(null)
     this._wrappedGetters = Object.create(null)
-    this._modules = new ModuleCollection(options) // 模块收集，这一行直接模块收集完毕了
+    // 模块收集，这一行直接模块收集完毕了
+    // module：{
+    // runtime:false
+    // _rawModule:module,
+    // state:state,
+    // _children:{}
+    // }
+    // 形成this._modules = {root:rootModule},
+    // rootModule:{runtime:false,_rawModule:module,state:state,_children:{module1,module2...}}
+    this._modules = new ModuleCollection(options)
     this._modulesNamespaceMap = Object.create(null)
     this._subscribers = []
     this._watcherVM = new Vue()
@@ -133,6 +142,7 @@ export class Store {
       return
     }
 
+    // action的before钩子
     try {
       this._actionSubscribers
         .filter(sub => sub.before)
@@ -149,6 +159,7 @@ export class Store {
       : entry[0](payload)
 
     return result.then(res => {
+      // action的after钩子触发
       try {
         this._actionSubscribers
           .filter(sub => sub.after)
@@ -300,20 +311,23 @@ function resetStoreVM (store, state, hot) {
     Vue.nextTick(() => oldVm.$destroy())
   }
 }
-// 参数：this, state-->this._modules.root.state, [], this._modules.root
+// 参数：this, state-->this._modules.root.state, [], this._modules.root,false
 function installModule (store, rootState, path, module, hot) {
   const isRoot = !path.length
   const namespace = store._modules.getNamespace(path) // 看字面意思是命名空间，其实就是模块路径
 
   // register in namespace map
+  // 如果模块中option中namespaced:true，检测模块名称是否重复
   if (module.namespaced) {
     if (store._modulesNamespaceMap[namespace] && process.env.NODE_ENV !== 'production') {
       console.error(`[vuex] duplicate namespace ${namespace} for the namespaced module ${path.join('/')}`)
     }
+    // 把模块放到_modulesNamespaceMap里面，方便检测
     store._modulesNamespaceMap[namespace] = module
   }
 
   // set state
+  // 如果不是根节点
   if (!isRoot && !hot) {
     const parentState = getNestedState(rootState, path.slice(0, -1))
     const moduleName = path[path.length - 1]
@@ -325,6 +339,8 @@ function installModule (store, rootState, path, module, hot) {
           )
         }
       }
+      // 利用Vue.set设置模块之间state的关系
+      // 刚开始觉得Vue有$set,$nextTick，哪有set和nextTick呀，再次翻源码，在globalApi中发现了Vue.util，Vue.set，Vue.nextTick等东西
       Vue.set(parentState, moduleName, module.state)
     })
   }
@@ -361,6 +377,7 @@ function makeLocalContext (store, namespace, path) {
 
   const local = {
     dispatch: noNamespace ? store.dispatch : (_type, _payload, _options) => {
+      // 兼容格式
       const args = unifyObjectStyle(_type, _payload, _options)
       const { payload, options } = args
       let { type } = args
@@ -490,7 +507,7 @@ function enableStrictMode (store) {
     }
   }, { deep: true, sync: true })
 }
-
+// 根据path拿state或者module的state
 function getNestedState (state, path) {
   return path.length
     ? path.reduce((state, key) => state[key], state)

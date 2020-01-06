@@ -17,6 +17,7 @@ export default class ModuleCollection {
     let module = this.root
     return path.reduce((namespace, key) => {
       module = module.getChild(key)
+      // 如果模块的opiton里面有namespaced:true,则namespace中就会将模块名添加进去
       return namespace + (module.namespaced ? key + '/' : '')
     }, '')
   }
