@@ -37,6 +37,11 @@ module.exports = {
     }
   },
 
+  devServer: {
+    hot: true,
+    open: true
+  },
+
   optimization: {
     splitChunks: {
       cacheGroups: {
