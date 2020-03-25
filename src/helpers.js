@@ -39,6 +39,7 @@ export const mapState = normalizeNamespace((namespace, states) => {
  * @param {Object|Array} mutations # Object's item can be a function which accept `commit` function as the first param, it can accept anthor params. You can commit mutation and do any other things in this function. specially, You need to pass anthor params from the mapped function.
  * @return {Object}
  */
+// mapMutations实际上创造了一个对象，里面是一堆commit，干的是action的活
 export const mapMutations = normalizeNamespace((namespace, mutations) => {
   const res = {}
   if (process.env.NODE_ENV !== 'production' && !isValidMap(mutations)) {
@@ -99,6 +100,7 @@ export const mapGetters = normalizeNamespace((namespace, getters) => {
  * @param {Object|Array} actions # Object's item can be a function which accept `dispatch` function as the first param, it can accept anthor params. You can dispatch action and do any other things in this function. specially, You need to pass anthor params from the mapped function.
  * @return {Object}
  */
+// mapActions实际上创造了一个对象，里面是一堆dispatch，干的是dispatch的活
 export const mapActions = normalizeNamespace((namespace, actions) => {
   const res = {}
   if (process.env.NODE_ENV !== 'production' && !isValidMap(actions)) {
